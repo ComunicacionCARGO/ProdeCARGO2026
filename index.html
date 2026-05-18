@@ -1,365 +1,936 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capacitación Seguridad 2026</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        .crossword-grid {
-            display: grid;
-            grid-template-columns: repeat(14, 1fr);
-            gap: 2px; /* Espaciado limpio entre celdas */
-            width: max-content;
-            margin: 0 auto;
-            /* Se eliminó el fondo y borde general para que quede "limpio" */
-        }
-        .cell {
-            /* Tamaños base para pantallas pequeñas (móviles) */
-            width: 24px;
-            height: 24px;
-            background-color: transparent; /* Celdas vacías totalmente invisibles */
-            position: relative;
-            transition: all 0.2s ease;
-        }
-        /* Media queries para escalar en pantallas más grandes */
-        @media (min-width: 380px) { .cell { width: 28px; height: 28px; } }
-        @media (min-width: 640px) { .cell { width: 40px; height: 40px; } }
-        @media (min-width: 1024px) { .cell { width: 48px; height: 48px; } }
-        
-        /* Estilo exclusivo para celdas que SÍ son parte del crucigrama */
-        .cell.active { background-color: #ffffff; border: 2px solid #334155; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .cell.filled { background-color: #fef9c3; border-color: #ca8a04; transform: scale(1.05); z-index: 5; }
-        .cell.hint { background-color: #f1f5f9; pointer-events: none; border-color: #cbd5e1; }
-        
-        .cell input {
-            width: 100%; height: 100%; text-align: center; text-transform: uppercase;
-            font-weight: 900; font-size: 0.9rem; outline: none; border: none;
-            background: transparent; color: #0f172a; padding: 0;
-        }
-        @media (min-width: 380px) { .cell input { font-size: 1rem; } }
-        @media (min-width: 640px) { .cell input { font-size: 1.3rem; } }
-        @media (min-width: 1024px) { .cell input { font-size: 1.5rem; } }
-        
-        .cell input:focus { background-color: #dbeafe; border-radius: 2px; }
-        .cell input:disabled { color: #64748b; font-weight: 900; }
-        
-        .cell-num {
-            position: absolute; top: 0px; left: 2px; font-size: 8px;
-            font-weight: 900; color: #1e293b; pointer-events: none; z-index: 10;
-            line-height: 1; letter-spacing: -0.5px;
-        }
-        @media (min-width: 640px) { .cell-num { font-size: 11px; top: 2px; left: 4px; } }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prode Mundial 2026 — La Empresa</title>
 
-        .hazard-stripe {
-            background: repeating-linear-gradient(-45deg, #fbbf24, #fbbf24 20px, #000 20px, #000 40px);
-        }
-    </style>
+  <!-- ══════════════════════════════════════════════════
+       FUENTES — Google Fonts
+       Puedes cambiarlas por otras si lo deseas
+  ══════════════════════════════════════════════════ -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ══════════════════════════════════════════════
+       VARIABLES DE COLOR — Editá aquí para cambiar
+       el esquema de colores de toda la app
+    ══════════════════════════════════════════════ */
+    :root {
+      --bg:        #0a0e1a;
+      --surface:   #111827;
+      --card:      #1c2540;
+      --border:    #2a3560;
+      --accent:    #f5c518;      /* amarillo fútbol */
+      --accent2:   #3b82f6;      /* azul */
+      --text:      #e8eaf0;
+      --muted:     #6b7494;
+      --win:       #22c55e;
+      --lose:      #ef4444;
+      --draw:      #f59e0b;
+      --radius:    12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ══════════════════════
+       HEADER
+    ══════════════════════ */
+    header {
+      background: linear-gradient(135deg, #0d1225 0%, #1a2550 100%);
+      border-bottom: 2px solid var(--accent);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 3px;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(245,197,24,0.4);
+    }
+
+    .logo span { color: var(--text); }
+
+    /* ══════════════════════════════════════════
+       SELECTOR DE USUARIO (login simple)
+       EDITÁ: agrega / quita nombres de tu equipo
+    ══════════════════════════════════════════ */
+    .user-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-selector label { color: var(--muted); font-size: .85rem; }
+    .user-selector select {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: .9rem;
+      cursor: pointer;
+    }
+
+    /* ══════════════════════
+       TABS DE NAVEGACIÓN
+    ══════════════════════ */
+    nav {
+      display: flex;
+      gap: 4px;
+      padding: 20px 32px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 10px 24px;
+      border-radius: 8px 8px 0 0;
+      border: 1px solid transparent;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: .9rem;
+      font-weight: 500;
+      transition: all .2s;
+    }
+    .tab:hover { color: var(--text); background: var(--surface); }
+    .tab.active {
+      background: var(--card);
+      color: var(--accent);
+      border-color: var(--border);
+      border-bottom-color: var(--card);
+    }
+
+    /* ══════════════════════
+       CONTENIDO PRINCIPAL
+    ══════════════════════ */
+    main {
+      padding: 28px 32px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ══════════════════════
+       SECCIÓN: MIS PRONÓSTICOS
+    ══════════════════════ */
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    /* Grilla de partidos */
+    .matches-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    /* ══════════════════════════════════════════════════
+       TARJETA DE PARTIDO
+       El JS genera estas tarjetas desde el array MATCHES
+    ══════════════════════════════════════════════════ */
+    .match-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      transition: border-color .2s, transform .2s;
+    }
+    .match-card:hover {
+      border-color: var(--accent2);
+      transform: translateY(-2px);
+    }
+
+    .match-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: .75rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .match-teams {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .team-name {
+      font-weight: 700;
+      font-size: 1rem;
+      text-align: center;
+      flex: 1;
+    }
+
+    .vs-badge {
+      background: var(--surface);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: .75rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* Inputs de resultado */
+    .score-inputs {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .score-inputs input[type="number"] {
+      width: 52px;
+      padding: 8px;
+      text-align: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-family: inherit;
+    }
+    .score-inputs input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .score-separator { font-size: 1.4rem; color: var(--muted); }
+
+    /* Badge de estado del partido */
+    .match-status {
+      text-align: center;
+      font-size: .75rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-block;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .status-open   { background: rgba(59,130,246,.15); color: var(--accent2); }
+    .status-closed { background: rgba(107,116,148,.15); color: var(--muted); }
+    .status-done   { background: rgba(34,197,94,.1);   color: var(--win); }
+
+    /* Puntos ganados */
+    .points-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: .85rem;
+      margin-top: 8px;
+    }
+    .pts-exact  { background: rgba(245,197,24,.15); color: var(--accent); }
+    .pts-result { background: rgba(59,130,246,.15);  color: var(--accent2); }
+    .pts-none   { background: rgba(239,68,68,.1);    color: var(--lose); }
+
+    /* ══════════════════════
+       SECCIÓN: TABLA
+    ══════════════════════ */
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .leaderboard-table th {
+      background: var(--surface);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .leaderboard-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: .92rem;
+    }
+    .leaderboard-table tr:last-child td { border-bottom: none; }
+    .leaderboard-table tr.me td { background: rgba(245,197,24,.06); }
+
+    .rank-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      color: var(--muted);
+    }
+    .rank-1 { color: #ffd700; }
+    .rank-2 { color: #c0c0c0; }
+    .rank-3 { color: #cd7f32; }
+
+    .player-name { font-weight: 700; }
+
+    /* ══════════════════════════════════════════
+       SECCIÓN: ADMIN — CARGAR RESULTADOS
+       Solo visible si el usuario es admin
+    ══════════════════════════════════════════ */
+    .admin-panel { display: none; }
+    .admin-panel.visible { display: block; }
+
+    .admin-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .admin-card h3 {
+      margin-bottom: 14px;
+      font-size: 1rem;
+      color: var(--accent);
+    }
+
+    .admin-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .admin-row .team-label { font-weight: 600; min-width: 100px; }
+    .admin-row input[type="number"] {
+      width: 60px;
+      padding: 8px;
+      text-align: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: inherit;
+    }
+
+    .btn {
+      padding: 9px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: .88rem;
+      font-weight: 600;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn:hover { opacity: .85; transform: translateY(-1px); }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: var(--lose); color: #fff; }
+
+    /* ══════════════════════════════════════════
+       SECCIÓN: ADMIN — AGREGAR PARTIDO
+       Aquí se configuran los partidos nuevos
+    ══════════════════════════════════════════ */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      font-size: .8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .form-group input, .form-group select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 14px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: .9rem;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: .9rem;
+    }
+    .alert-success { background: rgba(34,197,94,.15); color: var(--win); }
+    .alert-info    { background: rgba(59,130,246,.15); color: var(--accent2); }
+
+    /* ══════════════════════
+       RESPONSIVE
+    ══════════════════════ */
+    @media (max-width: 640px) {
+      header, nav, main { padding-left: 16px; padding-right: 16px; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans min-h-screen">
+<body>
 
-    <script>
-        const ADMIN_CONFIG = {
-            whatsapp: "5493512021045" // Formato: código de país + número (sin + ni espacios)
-        };
-    </script>
+<!-- ══════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════ -->
+<header>
+  <div class="logo">PRODE <span>MUNDIAL 2026</span></div>
 
-    <!-- Inicio -->
-    <div id="view-login" class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-8 border-yellow-500">
-            <div class="flex justify-center mb-6">
-                <i data-lucide="shield-check" class="w-16 h-16 text-yellow-600 bg-yellow-100 p-3 rounded-full"></i>
-            </div>
-            <h1 class="text-2xl font-black text-center uppercase italic">Seguridad 2026</h1>
-            <p class="text-slate-500 text-center mb-8 italic">Evaluación de Posturas</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-bold mb-1">Nombre Completo</label>
-                    <input type="text" id="user-name" class="w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-yellow-500/20 outline-none transition-all">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold mb-1">N° de Legajo</label>
-                    <input type="text" id="user-id" class="w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-yellow-500/20 outline-none transition-all">
-                </div>
-                <button onclick="startApp()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-black py-5 rounded-2xl transition-all shadow-xl flex items-center justify-center gap-2 text-lg uppercase">
-                    COMENZAR <i data-lucide="play" class="w-6 h-6"></i>
-                </button>
-            </div>
+  <div class="user-selector">
+    <label>👤 Jugando como:</label>
+    <select id="userSelect" onchange="changeUser()">
+      <!-- ══════════════════════════════════════════
+           EDITÁ AQUÍ: Agrega o quita participantes
+           Solo ponés su nombre; el sistema trackea
+           sus pronósticos automáticamente
+      ══════════════════════════════════════════ -->
+      <option value="">— Seleccioná tu nombre —</option>
+      <option value="admin">⚙️ Admin (cargar resultados)</option>
+      <option value="Lucas">Lucas</option>
+      <option value="Sofía">Sofía</option>
+      <option value="Martín">Martín</option>
+      <option value="Valentina">Valentina</option>
+      <option value="Diego">Diego</option>
+      <option value="Camila">Camila</option>
+      <!-- Agrega más participantes aquí ↑ -->
+    </select>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════
+     TABS
+══════════════════════════════════════════════════ -->
+<nav>
+  <button class="tab active" onclick="showTab('pronosticos')">⚽ Pronósticos</button>
+  <button class="tab" onclick="showTab('tabla')">🏆 Tabla</button>
+  <button class="tab admin-tab" onclick="showTab('admin')" style="display:none">⚙️ Admin</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════
+     MAIN
+══════════════════════════════════════════════════ -->
+<main>
+
+  <!-- ────────────────────────────────────────────
+       PANEL: PRONÓSTICOS
+  ──────────────────────────────────────────── -->
+  <div class="panel active" id="panel-pronosticos">
+    <div id="pronosticos-login-msg" class="alert alert-info">
+      Seleccioná tu nombre en el menú de arriba para cargar tus pronósticos.
+    </div>
+    <div class="section-title" id="pronosticos-title" style="display:none">
+      Mis Pronósticos
+    </div>
+    <div class="matches-grid" id="matchesContainer"></div>
+  </div>
+
+  <!-- ────────────────────────────────────────────
+       PANEL: TABLA DE POSICIONES
+  ──────────────────────────────────────────── -->
+  <div class="panel" id="panel-tabla">
+    <div class="section-title">Tabla de Posiciones</div>
+
+    <!-- Sistema de puntos explicado -->
+    <div class="alert alert-info" style="margin-bottom:20px">
+      🎯 <strong>Puntajes:</strong>
+      <!-- ══════════════════════════════════════════
+           EDITÁ: Cambia los puntos si querés
+      ══════════════════════════════════════════ -->
+      <strong>3 pts</strong> resultado + marcador exacto &nbsp;|&nbsp;
+      <strong>1 pt</strong> resultado correcto (ganador / empate)
+    </div>
+
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Jugador</th>
+          <th>Exactos</th>
+          <th>Resultados</th>
+          <th>Puntos</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboardBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ────────────────────────────────────────────
+       PANEL: ADMIN
+  ──────────────────────────────────────────── -->
+  <div class="panel" id="panel-admin">
+
+    <!-- ── Cargar resultado de partido ── -->
+    <div class="section-title">Cargar Resultados</div>
+    <div id="resultsContainer"></div>
+
+    <hr style="border-color:var(--border); margin: 28px 0"/>
+
+    <!-- ── Agregar nuevo partido ── -->
+    <div class="section-title">Agregar Nuevo Partido</div>
+    <div class="admin-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Equipo Local</label>
+          <!-- Ingresá el nombre del equipo local -->
+          <input type="text" id="newHome" placeholder="Ej: Argentina"/>
         </div>
-    </div>
-
-    <!-- Juego -->
-    <div id="view-game" class="hidden pb-24">
-        <header class="bg-slate-900 text-white p-3 sm:p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
-            <div>
-                <h2 class="font-bold uppercase italic text-yellow-500 text-sm sm:text-base">Capacitación 2026</h2>
-                <p id="display-user" class="text-xs opacity-70 truncate max-w-[150px] sm:max-w-xs"></p>
-            </div>
-            <div id="live-score" class="bg-white/10 px-2 py-1 rounded text-xs font-mono">Puntaje: 0%</div>
-        </header>
-
-        <main class="max-w-7xl mx-auto p-3 sm:p-4 lg:p-8 space-y-6">
-            
-            <!-- Instrucciones -->
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl shadow-sm">
-                <div class="flex items-center gap-2 mb-2">
-                    <i data-lucide="info" class="text-blue-600 w-5 h-5"></i>
-                    <h4 class="font-bold text-blue-800">Instrucciones de la Actividad</h4>
-                </div>
-                <ul class="text-sm text-blue-700 space-y-2 list-decimal ml-5">
-                    <li><strong>Crucigrama:</strong> Toca las casillas y escribe la letra según la pista. Las casillas grises son ayudas.</li>
-                    <li><strong>Ordenar pasos:</strong> Usa las flechas (▲/▼) para acomodar la secuencia correcta para un levantamiento seguro.</li>
-                </ul>
-            </div>
-
-            <section class="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200">
-                <div class="flex items-center gap-2 mb-4 sm:mb-6 border-l-4 border-yellow-500 pl-3">
-                    <h3 class="text-xl sm:text-2xl font-black uppercase italic tracking-tighter">Crucigrama</h3>
-                </div>
-                
-                <div class="flex flex-col xl:flex-row gap-6 sm:gap-8 items-start">
-                    <!-- Pistas -->
-                    <div class="w-full xl:w-1/3 space-y-4 text-xs sm:text-sm bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-100 h-full">
-                        <h4 class="font-bold text-slate-400 uppercase text-xs mb-2">Pistas</h4>
-                        <div class="space-y-3" id="pistas-list">
-                            <!-- JS inyectará definiciones -->
-                        </div>
-                    </div>
-
-                    <!-- Grilla -->
-                    <div class="w-full xl:w-2/3 overflow-x-auto bg-slate-100 p-2 sm:p-6 rounded-2xl flex justify-center items-center border-2 border-slate-200">
-                        <div id="crossword-container" class="crossword-grid"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Ordenar Pasos -->
-            <section class="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200">
-                <div class="flex items-center gap-2 mb-4 sm:mb-6 border-l-4 border-yellow-500 pl-3">
-                    <h3 class="text-xl sm:text-2xl font-black uppercase italic tracking-tighter">Ordenar los pasos</h3>
-                </div>
-                <div id="steps-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"></div>
-            </section>
-
-            <!-- Acciones -->
-            <div class="flex flex-col sm:flex-row gap-3 pt-4">
-                <button onclick="finishAndShare('whatsapp')" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-black py-4 sm:py-5 rounded-2xl shadow-xl flex items-center justify-center gap-2 sm:gap-3 transition-all text-base sm:text-lg">
-                    <i data-lucide="message-circle" class="w-5 h-5 sm:w-6 sm:h-6"></i> ENVIAR POR WHATSAPP
-                </button>
-            </div>
-        </main>
-        <div class="hazard-stripe fixed bottom-0 left-0 w-full h-4"></div>
-    </div>
-
-    <!-- Éxito -->
-    <div id="view-success" class="hidden flex items-center justify-center min-h-screen p-4 text-center">
-        <div class="bg-white p-8 sm:p-10 rounded-3xl shadow-2xl max-w-sm w-full">
-            <i data-lucide="check-circle-2" class="w-16 h-16 sm:w-20 sm:h-20 text-green-500 mx-auto mb-4"></i>
-            <h2 class="text-2xl sm:text-3xl font-black mb-2">¡HECHO!</h2>
-            <p id="final-stats" class="text-sm sm:text-base text-slate-600 mb-8"></p>
-            <button onclick="location.reload()" class="w-full bg-blue-600 text-white font-bold py-3 sm:py-4 px-8 rounded-xl">Volver</button>
+        <div class="form-group">
+          <label>Equipo Visitante</label>
+          <input type="text" id="newAway" placeholder="Ej: Francia"/>
         </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha y Hora</label>
+          <!-- Formato: YYYY-MM-DDTHH:MM -->
+          <input type="datetime-local" id="newDate"/>
+        </div>
+        <div class="form-group">
+          <label>Grupo / Fase</label>
+          <!-- Ej: Grupo A, Octavos, Final -->
+          <input type="text" id="newGroup" placeholder="Ej: Grupo A"/>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addMatch()">+ Agregar Partido</button>
     </div>
 
-    <script>
-        lucide.createIcons();
+    <hr style="border-color:var(--border); margin: 28px 0"/>
 
-        let userData = { name: '', id: '' };
-        let steps = ["Flexionar Rodillas", "Acercar Carga", "Levantar con Piernas", "Evaluar Peso"];
-        
-        // Datos Maestros de la distribución
-        const wordDefinitions = [
-            { id: 1, name: "ESPALDA", dir: 'H', start: [1, 0], text: "Parte del cuerpo que suele sufrir por malas posturas.", hintAt: 1 }, 
-            { id: 2, name: "RODILLAS", dir: 'H', start: [2, 6], text: "Articulaciones que se flexionan al levantar correctamente una carga.", hintAt: 2 }, 
-            { id: 3, name: "CARGA", dir: 'V', start: [0, 6], text: "Objeto o peso que se manipula en tareas de levantamiento.", hintAt: 0 }, 
-            { id: 4, name: "PESO", dir: 'H', start: [1, 10], text: "Magnitud que se debe evaluar antes de mover un objeto.", hintAt: 1 }, 
-            { id: 5, name: "LUMBALGIA", dir: 'V', start: [1, 4], text: "Dolor frecuente causado por sobreesfuerzo o mala postura.", hintAt: 3 }, 
-            { id: 6, name: "ENFERMEDAD", dir: 'V', start: [1, 0], text: "Alteración de la salud que puede prevenirse con buenos hábitos.", hintAt: 2 }, 
-            { id: 7, name: "POSTURAS", dir: 'V', start: [0, 13], text: "Posiciones corporales que influyen en la seguridad y el bienestar.", hintAt: 4 } 
-        ];
+    <!-- ── Reiniciar datos (precaución) ── -->
+    <div class="section-title" style="color:var(--lose)">Zona de Peligro</div>
+    <div class="admin-card" style="border-color:rgba(239,68,68,.3)">
+      <p style="color:var(--muted); margin-bottom:12px; font-size:.9rem">
+        Esto borra TODOS los pronósticos y resultados. Úsalo solo para empezar de cero.
+      </p>
+      <button class="btn btn-danger" onclick="resetAll()">⚠️ Reiniciar Todo</button>
+    </div>
 
-        // Generar mapa de celdas
-        const activeCells = {};
-        wordDefinitions.forEach(def => {
-            for(let i=0; i<def.name.length; i++) {
-                const r = def.dir === 'H' ? def.start[0] : def.start[0] + i;
-                const c = def.dir === 'H' ? def.start[1] + i : def.start[1];
-                const key = `${r}-${c}`;
-                
-                if(!activeCells[key]) activeCells[key] = { words: [], correct: def.name[i] };
-                activeCells[key].words.push(def.id);
-                
-                // Etiquetado inteligente de celdas inicio
-                if(i === 0) {
-                    if (activeCells[key].label) activeCells[key].label += '/' + def.id;
-                    else activeCells[key].label = def.id;
-                }
-                
-                // Letras de pista
-                if(i === def.hintAt) activeCells[key].isHint = true;
-            }
-        });
+  </div>
 
-        function startApp() {
-            const n = document.getElementById('user-name').value;
-            const i = document.getElementById('user-id').value;
-            if(!n || !i) return alert("Completa tus datos");
-            userData = { name: n, id: i };
-            document.getElementById('display-user').innerText = `${n} | ID: ${i}`;
-            document.getElementById('view-login').classList.add('hidden');
-            document.getElementById('view-game').classList.remove('hidden');
-            initUI();
-        }
+</main>
 
-        function initUI() {
-            // Cargar Pistas
-            const plist = document.getElementById('pistas-list');
-            wordDefinitions.forEach(d => {
-                const dirLabel = d.dir === 'H' ? '(H)' : '(V)';
-                plist.innerHTML += `<div class="flex gap-2"><span class="font-black text-blue-600">${d.id}.</span><p>${d.text} <span class="text-xs font-bold text-slate-400">${dirLabel}</span></p></div>`;
-            });
+<!-- ══════════════════════════════════════════════════════════════
+     JAVASCRIPT — TODA LA LÓGICA DE LA APP
+══════════════════════════════════════════════════════════════ -->
+<script>
 
-            // Dibujar Grilla
-            const grid = document.getElementById('crossword-container');
-            for (let r = 0; r < 11; r++) {
-                for (let c = 0; c < 14; c++) {
-                    const key = `${r}-${c}`;
-                    const cellDiv = document.createElement('div');
-                    cellDiv.className = `cell ${activeCells[key] ? 'active' : ''} ${activeCells[key]?.isHint ? 'hint filled' : ''}`;
-                    
-                    if(activeCells[key]) {
-                        if(activeCells[key].label) cellDiv.innerHTML += `<span class="cell-num">${activeCells[key].label}</span>`;
-                        
-                        const input = document.createElement('input');
-                        input.maxLength = 1;
-                        input.id = `in-${key}`;
-                        
-                        if(activeCells[key].isHint) {
-                            input.value = activeCells[key].correct;
-                            input.disabled = true;
-                        }
-                        
-                        input.addEventListener('focus', () => {
-                            if (!currentWordId || !activeCells[key].words.includes(currentWordId)) {
-                                currentWordId = activeCells[key].words[0];
-                            }
-                        });
-                        
-                        input.addEventListener('input', () => handleCell(key, input));
-                        input.addEventListener('keydown', (e) => handleNav(e, key));
-                        cellDiv.appendChild(input);
-                    }
-                    grid.appendChild(cellDiv);
-                }
-            }
-            renderSteps();
-            updateLiveScore();
-        }
+// ═══════════════════════════════════════════════════════
+// ① CONFIGURACIÓN DE PARTIDOS INICIALES
+//
+//    EDITÁ ESTE ARRAY para agregar los partidos del mundial.
+//    Cada partido tiene:
+//      id:        número único (no repitas)
+//      home:      equipo local
+//      away:      equipo visitante
+//      date:      fecha en formato "YYYY-MM-DD HH:MM"
+//      group:     fase o grupo ("Grupo A", "Octavos", etc.)
+//      homeScore: null = sin resultado aún; número = gol local
+//      awayScore: null = sin resultado aún; número = gol visitante
+//      closed:    false = abierto a pronósticos; true = cerrado
+// ═══════════════════════════════════════════════════════
+const INITIAL_MATCHES = [
+  {
+    id: 1,
+    home: "Argentina",
+    away: "España",
+    date: "2026-06-15 18:00",
+    group: "Grupo A",
+    homeScore: null,
+    awayScore: null,
+    closed: false
+  },
+  {
+    id: 2,
+    home: "Brasil",
+    away: "Alemania",
+    date: "2026-06-15 21:00",
+    group: "Grupo B",
+    homeScore: null,
+    awayScore: null,
+    closed: false
+  },
+  {
+    id: 3,
+    home: "Francia",
+    away: "Portugal",
+    date: "2026-06-16 18:00",
+    group: "Grupo C",
+    homeScore: null,
+    awayScore: null,
+    closed: false
+  },
+  {
+    id: 4,
+    home: "Inglaterra",
+    away: "Uruguay",
+    date: "2026-06-16 21:00",
+    group: "Grupo D",
+    homeScore: null,
+    awayScore: null,
+    closed: false
+  },
+  // ── Agrega más partidos aquí siguiendo el mismo formato ──
+];
 
-        let currentWordId = null;
+// ═══════════════════════════════════════════════════════
+// ② SISTEMA DE PUNTOS
+//    Editá los valores si querés cambiar el puntaje
+// ═══════════════════════════════════════════════════════
+const PTS_EXACT  = 3;  // marcador exacto
+const PTS_RESULT = 1;  // resultado correcto (G/E/G)
 
-        function handleCell(key, input) {
-            const cell = input.parentElement;
-            input.value = input.value.toUpperCase();
-            
-            if(input.value) {
-                cell.classList.add('filled');
-                if (!currentWordId || !activeCells[key].words.includes(currentWordId)) {
-                    currentWordId = activeCells[key].words[0];
-                }
-                moveFocus(key, 1);
-            } else {
-                cell.classList.remove('filled');
-            }
-            updateLiveScore();
-        }
+// ═══════════════════════════════════════════════════════
+// ③ LISTA DE PARTICIPANTES
+//    Deben coincidir con los <option> del <select> de arriba
+// ═══════════════════════════════════════════════════════
+const PLAYERS = ["Lucas","Sofía","Martín","Valentina","Diego","Camila"];
 
-        function handleNav(e, key) {
-            if(e.key === 'Backspace' && !document.getElementById(`in-${key}`).value) moveFocus(key, -1);
-        }
+// ═══════════════════════════════════════════════════════
+// ESTADO GLOBAL (se guarda en localStorage)
+// ═══════════════════════════════════════════════════════
+let currentUser = "";
+let state = loadState();
 
-        function moveFocus(currentKey, delta) {
-            const def = wordDefinitions.find(d => d.id === currentWordId);
-            if(!def) return;
-            const cells = [];
-            for(let i=0; i<def.name.length; i++) {
-                const r = def.dir === 'H' ? def.start[0] : def.start[0] + i;
-                const c = def.dir === 'H' ? def.start[1] + i : def.start[1];
-                cells.push(`${r}-${c}`);
-            }
-            const idx = cells.indexOf(currentKey);
-            const nextKey = cells[idx + delta];
-            const nextIn = document.getElementById(`in-${nextKey}`);
-            
-            if(nextIn) {
-                if(nextIn.disabled) moveFocus(nextKey, delta);
-                else nextIn.focus();
-            }
-        }
+function loadState() {
+  try {
+    const saved = localStorage.getItem("prode_state");
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  // Primera vez: carga los partidos iniciales
+  return {
+    matches: JSON.parse(JSON.stringify(INITIAL_MATCHES)),
+    predictions: {}   // { "Lucas": { 1: {home:2,away:1}, ... }, ... }
+  };
+}
 
-        function updateLiveScore() {
-            let hits = 0;
-            let total = 0;
-            Object.keys(activeCells).forEach(k => {
-                const val = document.getElementById(`in-${k}`).value.toUpperCase();
-                if(val === activeCells[k].correct) hits++;
-                total++;
-            });
-            const pct = Math.round((hits/total)*100);
-            document.getElementById('live-score').innerText = `Puntaje: ${pct}%`;
-            return pct;
-        }
+function saveState() {
+  localStorage.setItem("prode_state", JSON.stringify(state));
+}
 
-        function renderSteps() {
-            const cont = document.getElementById('steps-container');
-            cont.innerHTML = '';
-            steps.forEach((s, i) => {
-                cont.innerHTML += `
-                <div class="bg-white p-3 sm:p-4 border-2 rounded-2xl shadow-sm flex flex-col justify-between h-28 sm:h-32">
-                    <div class="flex gap-2"><span class="bg-slate-900 text-white w-6 h-6 sm:w-7 sm:h-7 rounded flex items-center justify-center font-bold text-xs sm:text-sm">${i+1}</span><span class="font-bold text-xs sm:text-sm leading-tight">${s}</span></div>
-                    <div class="flex justify-end gap-2">
-                        <button onclick="moveStep(${i},-1)" class="w-7 h-7 sm:w-8 sm:h-8 bg-slate-100 rounded hover:bg-yellow-200">▲</button>
-                        <button onclick="moveStep(${i},1)" class="w-7 h-7 sm:w-8 sm:h-8 bg-slate-100 rounded hover:bg-yellow-200">▼</button>
-                    </div>
-                </div>`;
-            });
-        }
+// ═══════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
 
-        function moveStep(i, d) {
-            if(i+d < 0 || i+d >= steps.length) return;
-            [steps[i], steps[i+d]] = [steps[i+d], steps[i]];
-            renderSteps();
-        }
+  if (name === 'tabla')   renderLeaderboard();
+  if (name === 'admin')   renderAdmin();
+  if (name === 'pronosticos') renderMatches();
+}
 
-        function finishAndShare(method) {
-            const score = updateLiveScore();
-            let report = `• REPORTE SEGURIDAD 2026\n`;
-            report += `• ${userData.name.toUpperCase()} (ID: ${userData.id})\n`;
-            report += `% PUNTAJE CRUCIGRAMA: ${score}%\n\n`;
-            
-            report += `• DETALLE:\n`;
-            wordDefinitions.forEach(d => {
-                let current = "";
-                for(let i=0; i<d.name.length; i++){
-                    const r = d.dir === 'H' ? d.start[0] : d.start[0]+i;
-                    const c = d.dir === 'H' ? d.start[1]+i : d.start[1];
-                    current += document.getElementById(`in-${r}-${c}`).value || "_";
-                }
-                const isOk = current.toUpperCase() === d.name ? "✓" : "X";
-                report += `${d.id}. ${current.toUpperCase()} ${isOk}\n`;
-            });
+// ═══════════════════════════════════════════════════════
+// CAMBIO DE USUARIO
+// ═══════════════════════════════════════════════════════
+function changeUser() {
+  currentUser = document.getElementById('userSelect').value;
 
-            report += `\n• ORDEN DE ACCIONES:\n`;
-            steps.forEach((s, i) => report += `${i+1}º ${s}\n`);
+  // Mostrar / ocultar tab admin
+  const adminTab = document.querySelector('.admin-tab');
+  adminTab.style.display = currentUser === 'admin' ? 'inline-block' : 'none';
 
-            if(method === 'whatsapp') window.open(`https://wa.me/${ADMIN_CONFIG.whatsapp}?text=${encodeURIComponent(report)}`);
-            
-            document.getElementById('view-game').classList.add('hidden');
-            document.getElementById('view-success').classList.remove('hidden');
-            document.getElementById('final-stats').innerText = `Has obtenido un ${score}% de aciertos en el crucigrama.`;
-        }
-    </script>
+  // Mostrar / ocultar mensaje de login
+  document.getElementById('pronosticos-login-msg').style.display =
+    currentUser ? 'none' : 'block';
+  document.getElementById('pronosticos-title').style.display =
+    currentUser && currentUser !== 'admin' ? 'block' : 'none';
+
+  renderMatches();
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDERIZAR PARTIDOS (pronósticos)
+// ═══════════════════════════════════════════════════════
+function renderMatches() {
+  const container = document.getElementById('matchesContainer');
+  container.innerHTML = '';
+  if (!currentUser || currentUser === 'admin') return;
+
+  const userPreds = state.predictions[currentUser] || {};
+
+  state.matches.forEach(match => {
+    const pred = userPreds[match.id];
+    const hasResult = match.homeScore !== null && match.awayScore !== null;
+    const isClosed = match.closed || hasResult;
+
+    // Calcula puntos si ya hay resultado
+    let ptsHtml = '';
+    if (hasResult && pred) {
+      const pts = calcPoints(pred, match);
+      if (pts === PTS_EXACT)
+        ptsHtml = `<div class="points-badge pts-exact">⭐ +${pts} pts (exacto!)</div>`;
+      else if (pts === PTS_RESULT)
+        ptsHtml = `<div class="points-badge pts-result">✔ +${pts} pt (resultado)</div>`;
+      else
+        ptsHtml = `<div class="points-badge pts-none">✗ 0 pts</div>`;
+    }
+
+    const statusText = hasResult
+      ? `Resultado: ${match.homeScore} - ${match.awayScore}`
+      : isClosed ? 'Cerrado (en juego)' : 'Abierto';
+    const statusClass = hasResult ? 'status-done' : isClosed ? 'status-closed' : 'status-open';
+
+    // Valores actuales del pronóstico
+    const ph = pred ? pred.home : '';
+    const pa = pred ? pred.away : '';
+
+    // Deshabilitar inputs si está cerrado
+    const disabled = isClosed ? 'disabled' : '';
+
+    container.innerHTML += `
+      <div class="match-card">
+        <div class="match-meta">
+          <span>📅 ${match.date}</span>
+          <span>${match.group}</span>
+        </div>
+        <div class="match-teams">
+          <div class="team-name">${match.home}</div>
+          <div class="vs-badge">VS</div>
+          <div class="team-name">${match.away}</div>
+        </div>
+        <div class="score-inputs">
+          <input type="number" min="0" max="30" value="${ph}"
+            placeholder="0" ${disabled}
+            onchange="savePred(${match.id}, 'home', this.value)"
+            oninput="savePred(${match.id}, 'home', this.value)"/>
+          <span class="score-separator">—</span>
+          <input type="number" min="0" max="30" value="${pa}"
+            placeholder="0" ${disabled}
+            onchange="savePred(${match.id}, 'away', this.value)"
+            oninput="savePred(${match.id}, 'away', this.value)"/>
+        </div>
+        <div class="match-status ${statusClass}">${statusText}</div>
+        ${ptsHtml}
+      </div>`;
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// GUARDAR PRONÓSTICO
+// ═══════════════════════════════════════════════════════
+function savePred(matchId, side, value) {
+  if (!currentUser || currentUser === 'admin') return;
+  if (!state.predictions[currentUser]) state.predictions[currentUser] = {};
+  if (!state.predictions[currentUser][matchId])
+    state.predictions[currentUser][matchId] = { home: '', away: '' };
+  state.predictions[currentUser][matchId][side] = value === '' ? '' : parseInt(value);
+  saveState();
+}
+
+// ═══════════════════════════════════════════════════════
+// CALCULAR PUNTOS
+// ═══════════════════════════════════════════════════════
+function calcPoints(pred, match) {
+  if (pred.home === '' || pred.away === '' ||
+      pred.home === null || pred.away === null ||
+      match.homeScore === null || match.awayScore === null) return 0;
+
+  const ph = parseInt(pred.home), pa = parseInt(pred.away);
+  const rh = match.homeScore,     ra = match.awayScore;
+
+  // Exacto
+  if (ph === rh && pa === ra) return PTS_EXACT;
+
+  // Resultado correcto (ganador o empate)
+  const predResult = ph > pa ? 'H' : ph < pa ? 'A' : 'D';
+  const realResult = rh > ra ? 'H' : rh < ra ? 'A' : 'D';
+  if (predResult === realResult) return PTS_RESULT;
+
+  return 0;
+}
+
+// ═══════════════════════════════════════════════════════
+// TABLA DE POSICIONES
+// ═══════════════════════════════════════════════════════
+function renderLeaderboard() {
+  const tbody = document.getElementById('leaderboardBody');
+  tbody.innerHTML = '';
+
+  const scores = PLAYERS.map(player => {
+    let pts = 0, exact = 0, result = 0;
+    const preds = state.predictions[player] || {};
+    state.matches.forEach(match => {
+      if (match.homeScore === null) return;
+      const pred = preds[match.id];
+      if (!pred) return;
+      const p = calcPoints(pred, match);
+      pts += p;
+      if (p === PTS_EXACT)  exact++;
+      if (p === PTS_RESULT) result++;
+    });
+    return { player, pts, exact, result };
+  });
+
+  scores.sort((a,b) => b.pts - a.pts || b.exact - a.exact);
+
+  scores.forEach((s, i) => {
+    const rank = i + 1;
+    const isMe = s.player === currentUser;
+    const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+    tbody.innerHTML += `
+      <tr class="${isMe ? 'me' : ''}">
+        <td><span class="rank-number ${rankClass}">${rank}</span></td>
+        <td><span class="player-name">${s.player}${isMe ? ' 👈' : ''}</span></td>
+        <td>${s.exact}</td>
+        <td>${s.result}</td>
+        <td><strong style="color:var(--accent)">${s.pts}</strong></td>
+      </tr>`;
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// PANEL ADMIN — CARGAR RESULTADOS
+// ═══════════════════════════════════════════════════════
+function renderAdmin() {
+  const container = document.getElementById('resultsContainer');
+  container.innerHTML = '';
+
+  state.matches.forEach(match => {
+    const hasResult = match.homeScore !== null && match.awayScore !== null;
+
+    container.innerHTML += `
+      <div class="admin-card">
+        <h3>${match.home} vs ${match.away} — ${match.date} (${match.group})</h3>
+        <div class="admin-row">
+          <span class="team-label">${match.home}</span>
+          <input type="number" min="0" max="30" id="res_h_${match.id}"
+            value="${hasResult ? match.homeScore : ''}" placeholder="Goles"/>
+          <span style="color:var(--muted)">—</span>
+          <input type="number" min="0" max="30" id="res_a_${match.id}"
+            value="${hasResult ? match.awayScore : ''}" placeholder="Goles"/>
+          <span class="team-label">${match.away}</span>
+          <button class="btn btn-primary" onclick="saveResult(${match.id})">
+            ${hasResult ? 'Actualizar' : 'Guardar Resultado'}
+          </button>
+          <button class="btn btn-secondary" onclick="toggleClose(${match.id})">
+            ${match.closed ? '🔓 Abrir' : '🔒 Cerrar'}
+          </button>
+          ${hasResult
+            ? `<button class="btn btn-danger" onclick="clearResult(${match.id})">Borrar Resultado</button>`
+            : ''}
+        </div>
+      </div>`;
+  });
+}
+
+// Guardar resultado
+function saveResult(matchId) {
+  const h = document.getElementById('res_h_' + matchId).value;
+  const a = document.getElementById('res_a_' + matchId).value;
+  if (h === '' || a === '') { alert('Completá los dos goles'); return; }
+  const match = state.matches.find(m => m.id === matchId);
+  match.homeScore = parseInt(h);
+  match.awayScore = parseInt(a);
+  match.closed = true;
+  saveState();
+  renderAdmin();
+  alert('✅ Resultado guardado!');
+}
+
+// Limpiar resultado
+function clearResult(matchId) {
+  if (!confirm('¿Borrar el resultado de este partido?')) return;
+  const match = state.matches.find(m => m.id === matchId);
+  match.homeScore = null;
+  match.awayScore = null;
+  saveState();
+  renderAdmin();
+}
+
+// Abrir / cerrar pronósticos
+function toggleClose(matchId) {
+  const match = state.matches.find(m => m.id === matchId);
+  match.closed = !match.closed;
+  saveState();
+  renderAdmin();
+}
+
+// ═══════════════════════════════════════════════════════
+// AGREGAR NUEVO PARTIDO DESDE ADMIN
+// ═══════════════════════════════════════════════════════
+function addMatch() {
+  const home  = document.getElementById('newHome').value.trim();
+  const away  = document.getElementById('newAway').value.trim();
+  const date  = document.getElementById('newDate').value.replace('T',' ');
+  const group = document.getElementById('newGroup').value.trim();
+
+  if (!home || !away || !date || !group) {
+    alert('Completá todos los campos');
+    return;
+  }
+
+  // Genera un ID único
+  const newId = Math.max(0, ...state.matches.map(m => m.id)) + 1;
+  state.matches.push({
+    id: newId, home, away,
+    date, group,
+    homeScore: null, awayScore: null, closed: false
+  });
+  saveState();
+
+  // Limpiar formulario
+  document.getElementById('newHome').value = '';
+  document.getElementById('newAway').value = '';
+  document.getElementById('newDate').value = '';
+  document.getElementById('newGroup').value = '';
+
+  alert('✅ Partido agregado!');
+  renderAdmin();
+}
+
+// ═══════════════════════════════════════════════════════
+// REINICIAR TODO
+// ═══════════════════════════════════════════════════════
+function resetAll() {
+  if (!confirm('¿Seguro que querés borrar TODO? Esta acción no se puede deshacer.')) return;
+  if (!confirm('Última oportunidad: ¿Borrar todos los pronósticos y resultados?')) return;
+  state = {
+    matches: JSON.parse(JSON.stringify(INITIAL_MATCHES)),
+    predictions: {}
+  };
+  saveState();
+  alert('Datos reiniciados.');
+  renderAdmin();
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+renderMatches();
+
+</script>
 </body>
 </html>
